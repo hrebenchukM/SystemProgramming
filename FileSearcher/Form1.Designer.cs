@@ -103,6 +103,7 @@
             SearchButton.TabIndex = 6;
             SearchButton.Text = "Найти";
             SearchButton.UseVisualStyleBackColor = true;
+            SearchButton.Click += SearchButton_Click;
             // 
             // StopButton
             // 
@@ -112,6 +113,7 @@
             StopButton.TabIndex = 7;
             StopButton.Text = "Остановить";
             StopButton.UseVisualStyleBackColor = true;
+            StopButton.Click += StopButton_Click;
             // 
             // button3
             // 
@@ -158,6 +160,7 @@
             SubdirectoriesCheckBox.TabIndex = 12;
             SubdirectoriesCheckBox.Text = "Подкаталоги";
             SubdirectoriesCheckBox.UseVisualStyleBackColor = true;
+            SubdirectoriesCheckBox.CheckedChanged += SubdirectoriesCheckBox_CheckedChanged;
             // 
             // comboBox1
             // 
