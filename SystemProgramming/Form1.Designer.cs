@@ -140,6 +140,8 @@
             Controls.Add(progressBar3);
             Controls.Add(progressBar2);
             Controls.Add(progressBar1);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
             Name = "Form1";
             Text = "Работа с потоками";
             ResumeLayout(false);
