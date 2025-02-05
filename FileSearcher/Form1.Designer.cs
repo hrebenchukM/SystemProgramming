@@ -33,8 +33,8 @@
             label2 = new Label();
             label3 = new Label();
             listView1 = new ListView();
-            textBox1 = new TextBox();
-            textBox2 = new TextBox();
+            textBoxMask = new TextBox();
+            textBoxText = new TextBox();
             SearchButton = new Button();
             StopButton = new Button();
             button3 = new Button();
@@ -42,8 +42,8 @@
             button5 = new Button();
             button6 = new Button();
             SubdirectoriesCheckBox = new CheckBox();
-            comboBox1 = new ComboBox();
-            label4 = new Label();
+            comboBoxPath = new ComboBox();
+            labelRes = new Label();
             SuspendLayout();
             // 
             // label1
@@ -81,19 +81,19 @@
             listView1.TabIndex = 3;
             listView1.UseCompatibleStateImageBehavior = false;
             // 
-            // textBox1
+            // textBoxMask
             // 
-            textBox1.Location = new Point(12, 33);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(100, 23);
-            textBox1.TabIndex = 4;
+            textBoxMask.Location = new Point(12, 33);
+            textBoxMask.Name = "textBoxMask";
+            textBoxMask.Size = new Size(100, 23);
+            textBoxMask.TabIndex = 4;
             // 
-            // textBox2
+            // textBoxText
             // 
-            textBox2.Location = new Point(136, 33);
-            textBox2.Name = "textBox2";
-            textBox2.Size = new Size(100, 23);
-            textBox2.TabIndex = 5;
+            textBoxText.Location = new Point(136, 33);
+            textBoxText.Name = "textBoxText";
+            textBoxText.Size = new Size(100, 23);
+            textBoxText.TabIndex = 5;
             // 
             // SearchButton
             // 
@@ -162,30 +162,30 @@
             SubdirectoriesCheckBox.UseVisualStyleBackColor = true;
             SubdirectoriesCheckBox.CheckedChanged += SubdirectoriesCheckBox_CheckedChanged;
             // 
-            // comboBox1
+            // comboBoxPath
             // 
-            comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new Point(268, 33);
-            comboBox1.Name = "comboBox1";
-            comboBox1.Size = new Size(121, 23);
-            comboBox1.TabIndex = 13;
+            comboBoxPath.FormattingEnabled = true;
+            comboBoxPath.Location = new Point(268, 33);
+            comboBoxPath.Name = "comboBoxPath";
+            comboBoxPath.Size = new Size(121, 23);
+            comboBoxPath.TabIndex = 13;
             // 
-            // label4
+            // labelRes
             // 
-            label4.AutoSize = true;
-            label4.Location = new Point(246, 112);
-            label4.Name = "label4";
-            label4.Size = new Size(214, 15);
-            label4.TabIndex = 14;
-            label4.Text = "Результаты поиска : файлов найдено ";
+            labelRes.AutoSize = true;
+            labelRes.Location = new Point(246, 112);
+            labelRes.Name = "labelRes";
+            labelRes.Size = new Size(214, 15);
+            labelRes.TabIndex = 14;
+            labelRes.Text = "Результаты поиска : файлов найдено ";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(735, 471);
-            Controls.Add(label4);
-            Controls.Add(comboBox1);
+            Controls.Add(labelRes);
+            Controls.Add(comboBoxPath);
             Controls.Add(SubdirectoriesCheckBox);
             Controls.Add(button6);
             Controls.Add(button5);
@@ -193,8 +193,8 @@
             Controls.Add(button3);
             Controls.Add(StopButton);
             Controls.Add(SearchButton);
-            Controls.Add(textBox2);
-            Controls.Add(textBox1);
+            Controls.Add(textBoxText);
+            Controls.Add(textBoxMask);
             Controls.Add(listView1);
             Controls.Add(label3);
             Controls.Add(label2);
@@ -211,8 +211,8 @@
         private Label label2;
         private Label label3;
         private ListView listView1;
-        private TextBox textBox1;
-        private TextBox textBox2;
+        private TextBox textBoxMask;
+        private TextBox textBoxText;
         private Button SearchButton;
         private Button StopButton;
         private Button button3;
@@ -220,7 +220,7 @@
         private Button button5;
         private Button button6;
         private CheckBox SubdirectoriesCheckBox;
-        private ComboBox comboBox1;
-        private Label label4;
+        private ComboBox comboBoxPath;
+        private Label labelRes;
     }
 }

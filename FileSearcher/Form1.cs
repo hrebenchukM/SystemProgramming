@@ -16,6 +16,64 @@ namespace FileSearcher
 
         private void SearchButton_Click(object sender, EventArgs e)
         {
+     
+
+            string Path = comboBoxPath.Text;
+            string Mask = textBoxMask.Text;
+            string Text = textBoxText.Text;
+            bool SubDir = SubdirectoriesCheckBox.Checked;
+
+
+
+
+
+            // Дописываем слэш (в случае его отсутствия)
+            if (Path[Path.Length - 1] != '\\')
+                Path += '\\';
+
+            // Создание объекта на основе введенного пути
+            DirectoryInfo di = new DirectoryInfo(Path);
+            // Если путь не существует
+            if (!di.Exists)
+            {
+                Console.WriteLine("Некорректный путь!!!");
+                return;
+            }
+
+            // Преобразуем введенную маску для файлов 
+            // в регулярное выражение
+
+            // Заменяем . на \.
+            Mask = Mask.Replace(".", @"\.");
+            // Заменяем ? на .
+            Mask = Mask.Replace("?", "."); // ????.txt  ....\.txt
+            // Заменяем * на .*
+            Mask = Mask.Replace("*", ".*");// *.txt   .*\.txt
+            // Указываем, что требуется найти точное соответствие маске
+            Mask = "^" + Mask + "$";
+
+            // Создание объекта регулярного выражения
+            // на основе маски
+            Regex regMask = new Regex(Mask, RegexOptions.IgnoreCase);
+
+            // Экранируем спецсимволы во введенном тексте
+            Text = Regex.Escape(Text);
+            // Создание объекта регулярного выражения
+            // на основе текста
+            Regex regText = Text.Length == 0 ? null : new Regex(Text, RegexOptions.IgnoreCase);
+            try
+            {
+                int fIndex = 0;
+                // Вызываем функцию поиска
+                ulong Count = FindFiles(regText, di, regMask, ref fIndex);
+                labelRes.Text = "Всего обработано файлов: {0}." + Count.ToString();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+
 
         }
 
