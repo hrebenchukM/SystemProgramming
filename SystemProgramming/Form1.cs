@@ -26,13 +26,14 @@ namespace SystemProgramming
         }
         private void ThreadFunk1()
         {
+
             try
             {
                 uiContext.Send(d => progressBar1.Minimum = 0, null);
                 uiContext.Send(d => progressBar1.Maximum = (int)d, 230);
                 uiContext.Send(d => progressBar1.Value = 0, null);
 
-                while (!event_for_stop1.WaitOne(0)) //будет выполняться, пока не будет установлен сигнал для остановки
+                while (!event_for_stop1.WaitOne(0)) //будет выполняться, пока не будет установлен сигнал для завершения работы потока
                 {
                     event_for_suspend1.WaitOne(); //Проверяем, нужно ли приостановить выполнение потока
 
