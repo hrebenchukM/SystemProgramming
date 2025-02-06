@@ -1,6 +1,11 @@
 using System.Text;
 using System.Text.RegularExpressions;
-
+        /*
+        class Directory https://msdn.microsoft.com/ru-ru/library/system.io.directory(v=vs.110).aspx
+        class DirectoryInfo https://msdn.microsoft.com/ru-ru/library/system.io.directoryinfo(v=vs.110).aspx
+        class File https://learn.microsoft.com/ru-ru/dotnet/api/system.io.file?view=net-6.0
+        class FileInfo https://msdn.microsoft.com/ru-ru/library/system.io.fileinfo(v=vs.110).aspx
+        */
 namespace FileSearcher
 {
     public partial class Form1 : Form
@@ -8,6 +13,22 @@ namespace FileSearcher
         public Form1()
         {
             InitializeComponent();
+
+            string[] drives = new string[]
+            {
+            "C:\\",  
+            "D:\\",  
+            };
+
+            foreach (var drive in drives)
+            {
+                comboBoxPath.Items.Add(drive);
+            }
+
+            if (comboBoxPath.Items.Count > 0)
+            {
+                comboBoxPath.SelectedIndex = 0;
+            }
         }
 
 
@@ -16,27 +37,23 @@ namespace FileSearcher
 
         private void SearchButton_Click(object sender, EventArgs e)
         {
-     
+
 
             string Path = comboBoxPath.Text;
-            string Mask = textBoxMask.Text;
-            string Text = textBoxText.Text;
-            bool SubDir = SubdirectoriesCheckBox.Checked;
+            string Mask = textBoxMask.Text; 
+            string Text = textBoxText.Text; 
+           
 
 
 
-
-
-            // Дописываем слэш (в случае его отсутствия)
-            if (Path[Path.Length - 1] != '\\')
-                Path += '\\';
+           
 
             // Создание объекта на основе введенного пути
             DirectoryInfo di = new DirectoryInfo(Path);
             // Если путь не существует
             if (!di.Exists)
             {
-                Console.WriteLine("Некорректный путь!!!");
+                MessageBox.Show("Некорректный путь!!!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -70,7 +87,7 @@ namespace FileSearcher
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                MessageBox.Show("Ошибка при поиске: {0}", ex.Message);
             }
 
 
@@ -79,7 +96,8 @@ namespace FileSearcher
 
         private void StopButton_Click(object sender, EventArgs e)
         {
-
+            MessageBox.Show("Поиск остановлен.");
+           
         }
 
         private void SubdirectoriesCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -88,12 +106,20 @@ namespace FileSearcher
         }
 
 
+        private void AddToListView(string fileName)
+        {
+            // Создаем новый элемент списка
+            ListViewItem item = new ListViewItem(fileName);
+            // Добавляем его в ListView
+            listView1.Items.Add(item);
+        }
+
 
 
 
 
         // Функция поиска файлов по имени (маске) и текста внутри файлов
-        static ulong FindFiles(Regex regText, DirectoryInfo di, Regex regMask, ref int fIndex)
+        private ulong FindFiles(Regex regText, DirectoryInfo di, Regex regMask, ref int fIndex)
         {
             // Поток для чтения из файла
             StreamReader sr = null;
@@ -110,7 +136,7 @@ namespace FileSearcher
                 // Получаем список файлов
                 fi = di.GetFiles();
             }
-            catch
+            catch 
             {
                 return CountOfMatchFiles;
             }
@@ -125,8 +151,8 @@ namespace FileSearcher
                     ++fIndex;
                     // Увеличиваем счетчик
                     ++CountOfMatchFiles;
-                    string res = fIndex + ") File: " + f.Name;
-                    Console.WriteLine(res);
+                  
+                    AddToListView(f.FullName);
 
                     if (regText != null)
                     {
@@ -141,15 +167,12 @@ namespace FileSearcher
                             sr.Close();
                             // Ищем заданный текст
                             mc = regText.Matches(Content);
-                            // Перебираем список вхождений
-                            foreach (Match m in mc)
-                            {
-                                Console.WriteLine("Текст найден в позиции {0}.", m.Index);
-                            }
+                         
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine(ex.Message);
+                            MessageBox.Show("Ошибка при чтении файла : {0}", ex.Message);
+
                         }
                     }
 

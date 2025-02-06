@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35527.113 d17.12
+VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SystemProgramming", "SystemProgramming\SystemProgramming.csproj", "{7372AB6B-DC8D-4EBB-A95C-CFC4041DFD5F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSearcher", "FileSearcher\FileSearcher.csproj", "{3E7D6718-8CDE-463A-A4FB-656B1F228C42}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TPL copy file", "TPL copy file\TPL copy file.csproj", "{52C83721-4960-4141-ADF4-E8F130BE4A6B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{3E7D6718-8CDE-463A-A4FB-656B1F228C42}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E7D6718-8CDE-463A-A4FB-656B1F228C42}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E7D6718-8CDE-463A-A4FB-656B1F228C42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52C83721-4960-4141-ADF4-E8F130BE4A6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52C83721-4960-4141-ADF4-E8F130BE4A6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52C83721-4960-4141-ADF4-E8F130BE4A6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52C83721-4960-4141-ADF4-E8F130BE4A6B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
