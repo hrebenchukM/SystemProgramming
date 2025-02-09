@@ -164,7 +164,6 @@
             SubdirectoriesCheckBox.TabIndex = 12;
             SubdirectoriesCheckBox.Text = "Подкаталоги";
             SubdirectoriesCheckBox.UseVisualStyleBackColor = true;
-            SubdirectoriesCheckBox.CheckedChanged += SubdirectoriesCheckBox_CheckedChanged;
             // 
             // comboBoxPath
             // 

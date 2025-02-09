@@ -1,17 +1,16 @@
 using System.Drawing;
 using System.Text;
 using System.Text.RegularExpressions;
-        /*
-        class Directory https://msdn.microsoft.com/ru-ru/library/system.io.directory(v=vs.110).aspx
-        class DirectoryInfo https://msdn.microsoft.com/ru-ru/library/system.io.directoryinfo(v=vs.110).aspx
-        class File https://learn.microsoft.com/ru-ru/dotnet/api/system.io.file?view=net-6.0
-        class FileInfo https://msdn.microsoft.com/ru-ru/library/system.io.fileinfo(v=vs.110).aspx
-        */
+/*
+class Directory https://msdn.microsoft.com/ru-ru/library/system.io.directory(v=vs.110).aspx
+class DirectoryInfo https://msdn.microsoft.com/ru-ru/library/system.io.directoryinfo(v=vs.110).aspx
+class File https://learn.microsoft.com/ru-ru/dotnet/api/system.io.file?view=net-6.0
+class FileInfo https://msdn.microsoft.com/ru-ru/library/system.io.fileinfo(v=vs.110).aspx
+*/
 namespace FileSearcher
 {
     public partial class Form1 : Form
     {
-        ManualResetEvent event_for_suspend1 = new ManualResetEvent(true);//управляет паузой в потоке (true означает, что поток может работать)
         ManualResetEvent event_for_stop1 = new ManualResetEvent(false);// сигнализирует о завершении (false - поток работает, true - нужно остановить)
 
         public SynchronizationContext uiContext;//используется для взаимодействия потока с UI (чтобы обновлять интерфейс из потока)
@@ -57,68 +56,93 @@ namespace FileSearcher
 
         private void ThreadFunk1()
         {
-            MessageBox.Show("Поток поиска запускается.");
-
-            // uiContext.Send отправляет синхронное сообщение в контекст синхронизации
-            // SendOrPostCallback - делегат указывает метод, вызываемый при отправке сообщения в контекст синхронизации. 
-            uiContext.Send(d => listView1.Items.Clear()/* Вызываемый делегат SendOrPostCallback */,
-            null/* Объект, переданный делегату */);
-
-            string Path = comboBoxPath.Text;
-            string Mask = textBoxMask.Text;
-            string Text = textBoxText.Text;
-
-
-
-
-
-
-            // Дописываем слэш (в случае его отсутствия)
-            if (Path[Path.Length - 1] != '\\')
-                Path += '\\';
-
-            // Создание объекта на основе введенного пути
-            DirectoryInfo di = new DirectoryInfo(Path);
-            // Если путь не существует
-            if (!di.Exists)
-            {
-                //Console.WriteLine("Некорректный путь!!!");
-                return;
-            }
-
-            // Преобразуем введенную маску для файлов 
-            // в регулярное выражение
-
-            // Заменяем . на \.
-            Mask = Mask.Replace(".", @"\.");
-            // Заменяем ? на .
-            Mask = Mask.Replace("?", "."); // ????.txt  ....\.txt
-            // Заменяем * на .*
-            Mask = Mask.Replace("*", ".*");// *.txt   .*\.txt
-            // Указываем, что требуется найти точное соответствие маске
-            Mask = "^" + Mask + "$";
-
-            // Создание объекта регулярного выражения
-            // на основе маски
-            Regex regMask = new Regex(Mask, RegexOptions.IgnoreCase);
-
-            // Экранируем спецсимволы во введенном тексте
-            Text = Regex.Escape(Text);
-            // Создание объекта регулярного выражения
-            // на основе текста
-            Regex regText = Text.Length == 0 ? null : new Regex(Text, RegexOptions.IgnoreCase);
-
-
-
-
-
-
+          
             try
             {
+                // uiContext.Send отправляет синхронное сообщение в контекст синхронизации
+                // SendOrPostCallback - делегат указывает метод, вызываемый при отправке сообщения в контекст синхронизации. 
+                uiContext.Send(d => listView1.Items.Clear()/* Вызываемый делегат SendOrPostCallback */,
+                null/* Объект, переданный делегату */);
+
+                MessageBox.Show("Поток поиска запускается.");
+
+
+
+                string Path = string.Empty;
+                uiContext.Send(d =>
+                {
+                    Path = comboBoxPath.Text;
+                }, null);
+
+
+
+                string Mask = string.Empty;
+                uiContext.Send(d =>
+                {
+                    Mask = textBoxMask.Text;
+                }, null);
+
+
+
+                string Text = string.Empty;
+                uiContext.Send(d =>
+                {
+                    Text = textBoxText.Text;
+                }, null);
+
+
+
+
+
+
+
+                // Дописываем слэш (в случае его отсутствия)
+                if (Path[Path.Length - 1] != '\\')
+                    Path += '\\';
+
+                // Создание объекта на основе введенного пути
+                DirectoryInfo di = new DirectoryInfo(Path);
+                // Если путь не существует
+                if (!di.Exists)
+                {
+                    //Console.WriteLine("Некорректный путь!!!");
+                    return;
+                }
+
+                // Преобразуем введенную маску для файлов 
+                // в регулярное выражение
+
+                // Заменяем . на \.
+                Mask = Mask.Replace(".", @"\.");
+                // Заменяем ? на .
+                Mask = Mask.Replace("?", "."); // ????.txt  ....\.txt
+                                               // Заменяем * на .*
+                Mask = Mask.Replace("*", ".*");// *.txt   .*\.txt
+                                               // Указываем, что требуется найти точное соответствие маске
+                Mask = "^" + Mask + "$";
+
+                // Создание объекта регулярного выражения
+                // на основе маски
+                Regex regMask = new Regex(Mask, RegexOptions.IgnoreCase);
+
+                // Экранируем спецсимволы во введенном тексте
+                Text = Regex.Escape(Text);
+                // Создание объекта регулярного выражения
+                // на основе текста
+                Regex regText = Text.Length == 0 ? null : new Regex(Text, RegexOptions.IgnoreCase);
+
+
+
+
+
                 while (!event_for_stop1.WaitOne(0)) //будет выполняться, пока не будет установлен сигнал для завершения работы потока
                 {
+                
+
                     // Вызываем функцию поиска
                     ulong Count = FindTextInFiles(regText, di, regMask);
+
+                   
 
                     // uiContext.Send отправляет синхронное сообщение в контекст синхронизации
                     // SendOrPostCallback - делегат указывает метод, вызываемый при отправке сообщения в контекст синхронизации. 
@@ -127,20 +151,15 @@ namespace FileSearcher
                     }/* Вызываемый делегат SendOrPostCallback */,
                     null/* Объект, переданный делегату */);
 
+
                 }
-
-
+               
 
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Ошибка при поиске: " + ex.Message);
             }
-
-
-
-
-
 
         }
 
@@ -160,23 +179,18 @@ namespace FileSearcher
             th1.IsBackground = true;
             // Старт потока
             th1.Start();
-
+       
         }
 
         private void StopButton_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Поток поиска остановлен.");
             event_for_stop1.Set();
+            MessageBox.Show("Поток поиска остановлен.");
             //Application.Exit();
+      
         }
 
-        private void SubdirectoriesCheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
-
-
-       
+      
 
         // Функция поиска
         private ulong FindTextInFiles(Regex regText, DirectoryInfo di, Regex regMask)
@@ -204,6 +218,11 @@ namespace FileSearcher
             // Перебираем список файлов
             foreach (FileInfo f in fi)
             {
+
+                if (event_for_stop1.WaitOne(0))
+                    return 0; // Остановить обработку, если сигнал для остановки установлен
+
+
                 // Если файл соответствует маске
                 if (regMask.IsMatch(f.Name))
                 {
@@ -226,6 +245,8 @@ namespace FileSearcher
                                 AddToListView(f);
                                 // Увеличиваем счетчик
                                 ++CountOfMatchFiles;
+
+                                Thread.Sleep(100);
                             }
                         }
                         catch (Exception ex)
@@ -239,6 +260,8 @@ namespace FileSearcher
                         AddToListView(f);
                         // Увеличиваем счетчик
                         ++CountOfMatchFiles;
+
+                        Thread.Sleep(100);
 
                     }
                 }
@@ -260,20 +283,24 @@ namespace FileSearcher
             // Возврат количества обработанных файлов
             return CountOfMatchFiles;
         }
+
+
         private void AddToListView(FileInfo file)
         {
-          
+        
             // uiContext.Send отправляет синхронное сообщение в контекст синхронизации
             // SendOrPostCallback - делегат указывает метод, вызываемый при отправке сообщения в контекст синхронизации. 
             uiContext.Send(d =>
             {
-                foreach (ListViewItem  i in listView1.Items)
+
+                foreach (ListViewItem i in listView1.Items)
                 {
                     if (i.Text == file.Name && i.SubItems[1].Text == file.DirectoryName)
                     {
-                        return; 
+                        return;
                     }
                 }
+
 
                 // Создадим элемент списка и три подэлемента 
                 ListViewItem item = new ListViewItem(file.Name);
@@ -291,6 +318,9 @@ namespace FileSearcher
                 item.ImageIndex = imageListSmall.Images.Count - 1;
 
                 listView1.Items.Add(item);
+
+           
+
             }/* Вызываемый делегат SendOrPostCallback */,
             null/* Объект, переданный делегату */);
         }
