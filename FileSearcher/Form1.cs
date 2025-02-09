@@ -1,3 +1,4 @@
+using System.Drawing;
 using System.Text;
 using System.Text.RegularExpressions;
         /*
@@ -10,50 +11,66 @@ namespace FileSearcher
 {
     public partial class Form1 : Form
     {
+        // Создаем пустой список изображений для больших и маленьких значков
+        private ImageList imageListSmall = new ImageList();
+        private ImageList imageListLarge = new ImageList();
         public Form1()
         {
             InitializeComponent();
 
-            string[] drives = new string[]
+            string[] disks =
             {
-            "C:\\",  
-            "D:\\",  
+            "C:\\",
+            "D:\\",
             };
 
-            foreach (var drive in drives)
+            foreach (var disk in disks)
             {
-                comboBoxPath.Items.Add(drive);
+                comboBoxPath.Items.Add(disk);
             }
 
             if (comboBoxPath.Items.Count > 0)
             {
                 comboBoxPath.SelectedIndex = 0;
             }
+
+
+         
+            imageListSmall.ImageSize = new Size(32, 32);
+            imageListLarge.ImageSize = new Size(48, 48);
+
+            // ассоциируем списки изображений с ListView
+            listView1.LargeImageList = imageListLarge;
+            listView1.SmallImageList = imageListSmall;
         }
 
 
-       
+
 
 
         private void SearchButton_Click(object sender, EventArgs e)
         {
-
+            listView1.Items.Clear();
 
             string Path = comboBoxPath.Text;
-            string Mask = textBoxMask.Text; 
-            string Text = textBoxText.Text; 
-           
+            string Mask = textBoxMask.Text;
+            string Text = textBoxText.Text;
 
 
 
-           
+
+
+
+            // Дописываем слэш (в случае его отсутствия)
+            if (Path[Path.Length - 1] != '\\')
+                Path += '\\';
 
             // Создание объекта на основе введенного пути
             DirectoryInfo di = new DirectoryInfo(Path);
             // Если путь не существует
             if (!di.Exists)
             {
-                MessageBox.Show("Некорректный путь!!!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                //Console.WriteLine("Некорректный путь!!!");
                 return;
             }
 
@@ -78,18 +95,19 @@ namespace FileSearcher
             // Создание объекта регулярного выражения
             // на основе текста
             Regex regText = Text.Length == 0 ? null : new Regex(Text, RegexOptions.IgnoreCase);
+
+
+
             try
             {
-                int fIndex = 0;
                 // Вызываем функцию поиска
-                ulong Count = FindFiles(regText, di, regMask, ref fIndex);
-                labelRes.Text = "Всего обработано файлов: {0}." + Count.ToString();
+                ulong Count = FindTextInFiles(regText, di, regMask);
+                labelRes.Text = "Результаты поиска: файлов найдено " + Count + ".";
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ошибка при поиске: {0}", ex.Message);
+                MessageBox.Show("Ошибка при поиске: " + ex.Message);
             }
-
 
 
         }
@@ -97,7 +115,7 @@ namespace FileSearcher
         private void StopButton_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Поиск остановлен.");
-           
+            Application.Exit();
         }
 
         private void SubdirectoriesCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -106,21 +124,12 @@ namespace FileSearcher
         }
 
 
-        private void AddToListView(string fileName)
+       
+
+        // Функция поиска
+        private ulong FindTextInFiles(Regex regText, DirectoryInfo di, Regex regMask)
         {
-            // Создаем новый элемент списка
-            ListViewItem item = new ListViewItem(fileName);
-            // Добавляем его в ListView
-            listView1.Items.Add(item);
-        }
 
-
-
-
-
-        // Функция поиска файлов по имени (маске) и текста внутри файлов
-        private ulong FindFiles(Regex regText, DirectoryInfo di, Regex regMask, ref int fIndex)
-        {
             // Поток для чтения из файла
             StreamReader sr = null;
             // Список найденных совпадений
@@ -130,13 +139,12 @@ namespace FileSearcher
             ulong CountOfMatchFiles = 0;
 
             FileInfo[] fi = null;
-
             try
             {
                 // Получаем список файлов
                 fi = di.GetFiles();
             }
-            catch 
+            catch
             {
                 return CountOfMatchFiles;
             }
@@ -144,16 +152,9 @@ namespace FileSearcher
             // Перебираем список файлов
             foreach (FileInfo f in fi)
             {
-
                 // Если файл соответствует маске
                 if (regMask.IsMatch(f.Name))
                 {
-                    ++fIndex;
-                    // Увеличиваем счетчик
-                    ++CountOfMatchFiles;
-                  
-                    AddToListView(f.FullName);
-
                     if (regText != null)
                     {
                         try
@@ -167,30 +168,112 @@ namespace FileSearcher
                             sr.Close();
                             // Ищем заданный текст
                             mc = regText.Matches(Content);
-                         
+
+                            if (mc.Count > 0)
+                            {
+                                AddToListView(f);
+                                // Увеличиваем счетчик
+                                ++CountOfMatchFiles;
+                            }
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show("Ошибка при чтении файла : {0}", ex.Message);
-
+                            MessageBox.Show(ex.Message);
                         }
                     }
+                    else
+                    {
 
+                        AddToListView(f);
+                        // Увеличиваем счетчик
+                        ++CountOfMatchFiles;
 
+                    }
                 }
             }
 
-            // Получаем список подкаталогов
-            DirectoryInfo[] diSub = di.GetDirectories();
-            // Для каждого из них вызываем (рекурсивно)
-            // эту же функцию поиска
-            foreach (DirectoryInfo diSubDir in diSub)
-                CountOfMatchFiles += FindFiles(regText, diSubDir, regMask, ref fIndex);
 
+
+
+
+            if (SubdirectoriesCheckBox.Checked)
+            {
+                // Получаем список подкаталогов
+                DirectoryInfo[] diSub = di.GetDirectories();
+                // Для каждого из них вызываем (рекурсивно)
+                // эту же функцию поиска
+                foreach (DirectoryInfo diSubDir in diSub)
+                    CountOfMatchFiles += FindTextInFiles(regText, diSubDir, regMask);
+            }
             // Возврат количества обработанных файлов
             return CountOfMatchFiles;
         }
 
+        private void AddToListView(FileInfo file)
+        {
+        
+            // Создадим элемент списка и три подэлемента 
+            ListViewItem item = new ListViewItem(file.Name);
+            item.SubItems.Add(file.DirectoryName);
+            item.SubItems.Add(file.Length.ToString() + " байт");
+            item.SubItems.Add(file.LastWriteTime.ToString());
 
+         
+            Icon icon = Icon.ExtractAssociatedIcon(file.FullName);
+
+            // Инициализируем списки изображений картинками
+            imageListSmall.Images.Add(icon);  
+            imageListLarge.Images.Add(icon);
+
+            item.ImageIndex = imageListSmall.Images.Count-1;
+
+            listView1.Items.Add(item);
+        }
+
+
+        private void button3_Click(object sender, EventArgs e)// Малые значки
+        {
+
+            listView1.View = View.SmallIcon;
+          
+        }
+
+        private void button4_Click(object sender, EventArgs e)// Плитки
+        {
+            listView1.View = View.Tile;
+        }
+
+        private void button5_Click(object sender, EventArgs e)// Большие значки
+        {
+            listView1.View = View.LargeIcon;
+
+        }
+
+        private void button6_Click(object sender, EventArgs e) //  Таблица
+        {
+            // Установим табличный режим отображения
+            listView1.View = View.Details;
+
+            // При выборе элемента списка будет подсвечена вся строка
+            listView1.FullRowSelect = true;
+
+            // Отобразим линии сетки в табличном режиме
+            listView1.GridLines = true;
+
+            // Установим сортировку элементов в порядке возрастания
+            listView1.Sorting = SortOrder.Ascending;
+
+            if (listView1.Columns.Count == 0)
+            {
+                // Создадим колонки (1 параметр - название столбца, 2 параметр - ширина столбца, выравнивание названия)
+                listView1.Columns.Add("Имя ", 200);
+                listView1.Columns.Add("Папка", 300);
+                listView1.Columns.Add("Размер", 100);
+                listView1.Columns.Add("Дата Модификации", 100);
+            }
+        }
     }
+
+
+
 }

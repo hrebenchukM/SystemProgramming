@@ -80,6 +80,7 @@
             listView1.Size = new Size(711, 317);
             listView1.TabIndex = 3;
             listView1.UseCompatibleStateImageBehavior = false;
+            listView1.View = View.Details;
             // 
             // textBoxMask
             // 
@@ -123,6 +124,7 @@
             button3.Size = new Size(34, 34);
             button3.TabIndex = 8;
             button3.UseVisualStyleBackColor = true;
+            button3.Click += button3_Click;
             // 
             // button4
             // 
@@ -132,6 +134,7 @@
             button4.Size = new Size(34, 34);
             button4.TabIndex = 9;
             button4.UseVisualStyleBackColor = true;
+            button4.Click += button4_Click;
             // 
             // button5
             // 
@@ -141,6 +144,7 @@
             button5.Size = new Size(34, 34);
             button5.TabIndex = 10;
             button5.UseVisualStyleBackColor = true;
+            button5.Click += button5_Click;
             // 
             // button6
             // 
@@ -150,6 +154,7 @@
             button6.Size = new Size(34, 34);
             button6.TabIndex = 11;
             button6.UseVisualStyleBackColor = true;
+            button6.Click += button6_Click;
             // 
             // SubdirectoriesCheckBox
             // 
@@ -175,9 +180,8 @@
             labelRes.AutoSize = true;
             labelRes.Location = new Point(246, 112);
             labelRes.Name = "labelRes";
-            labelRes.Size = new Size(214, 15);
+            labelRes.Size = new Size(0, 15);
             labelRes.TabIndex = 14;
-            labelRes.Text = "Результаты поиска : файлов найдено ";
             // 
             // Form1
             // 
@@ -199,6 +203,8 @@
             Controls.Add(label3);
             Controls.Add(label2);
             Controls.Add(label1);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
             Name = "Form1";
             Text = "File Search";
             ResumeLayout(false);
