@@ -11,6 +11,12 @@ namespace FileSearcher
 {
     public partial class Form1 : Form
     {
+        ManualResetEvent event_for_suspend1 = new ManualResetEvent(true);//управляет паузой в потоке (true означает, что поток может работать)
+        ManualResetEvent event_for_stop1 = new ManualResetEvent(false);// сигнализирует о завершении (false - поток работает, true - нужно остановить)
+
+        public SynchronizationContext uiContext;//используется для взаимодействия потока с UI (чтобы обновлять интерфейс из потока)
+
+
         // Создаем пустой список изображений для больших и маленьких значков
         private ImageList imageListSmall = new ImageList();
         private ImageList imageListLarge = new ImageList();
@@ -42,15 +48,21 @@ namespace FileSearcher
             // ассоциируем списки изображений с ListView
             listView1.LargeImageList = imageListLarge;
             listView1.SmallImageList = imageListSmall;
+
+
+            // Получим контекст синхронизации для текущего потока 
+            uiContext = SynchronizationContext.Current;
         }
 
 
-
-
-
-        private void SearchButton_Click(object sender, EventArgs e)
+        private void ThreadFunk1()
         {
-            listView1.Items.Clear();
+            MessageBox.Show("Поток поиска запускается.");
+
+            // uiContext.Send отправляет синхронное сообщение в контекст синхронизации
+            // SendOrPostCallback - делегат указывает метод, вызываемый при отправке сообщения в контекст синхронизации. 
+            uiContext.Send(d => listView1.Items.Clear()/* Вызываемый делегат SendOrPostCallback */,
+            null/* Объект, переданный делегату */);
 
             string Path = comboBoxPath.Text;
             string Mask = textBoxMask.Text;
@@ -98,11 +110,27 @@ namespace FileSearcher
 
 
 
+
+
+
             try
             {
-                // Вызываем функцию поиска
-                ulong Count = FindTextInFiles(regText, di, regMask);
-                labelRes.Text = "Результаты поиска: файлов найдено " + Count + ".";
+                while (!event_for_stop1.WaitOne(0)) //будет выполняться, пока не будет установлен сигнал для завершения работы потока
+                {
+                    // Вызываем функцию поиска
+                    ulong Count = FindTextInFiles(regText, di, regMask);
+
+                    // uiContext.Send отправляет синхронное сообщение в контекст синхронизации
+                    // SendOrPostCallback - делегат указывает метод, вызываемый при отправке сообщения в контекст синхронизации. 
+                    uiContext.Send(d => {
+                        labelRes.Text = "Результаты поиска: файлов найдено " + Count + ".";
+                    }/* Вызываемый делегат SendOrPostCallback */,
+                    null/* Объект, переданный делегату */);
+
+                }
+
+
+
             }
             catch (Exception ex)
             {
@@ -110,12 +138,36 @@ namespace FileSearcher
             }
 
 
+
+
+
+
+        }
+
+
+
+
+
+        private void SearchButton_Click(object sender, EventArgs e)
+        {
+
+
+            event_for_stop1.Reset();
+            // Создание делегата функции, в которой будет работать новый поток
+            ThreadStart MethodThread = new ThreadStart(ThreadFunk1);
+            // Создание объекта потока
+            Thread th1 = new Thread(MethodThread);
+            th1.IsBackground = true;
+            // Старт потока
+            th1.Start();
+
         }
 
         private void StopButton_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Поиск остановлен.");
-            Application.Exit();
+            MessageBox.Show("Поток поиска остановлен.");
+            event_for_stop1.Set();
+            //Application.Exit();
         }
 
         private void SubdirectoriesCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -208,27 +260,42 @@ namespace FileSearcher
             // Возврат количества обработанных файлов
             return CountOfMatchFiles;
         }
-
         private void AddToListView(FileInfo file)
         {
-        
-            // Создадим элемент списка и три подэлемента 
-            ListViewItem item = new ListViewItem(file.Name);
-            item.SubItems.Add(file.DirectoryName);
-            item.SubItems.Add(file.Length.ToString() + " байт");
-            item.SubItems.Add(file.LastWriteTime.ToString());
+          
+            // uiContext.Send отправляет синхронное сообщение в контекст синхронизации
+            // SendOrPostCallback - делегат указывает метод, вызываемый при отправке сообщения в контекст синхронизации. 
+            uiContext.Send(d =>
+            {
+                foreach (ListViewItem  i in listView1.Items)
+                {
+                    if (i.Text == file.Name && i.SubItems[1].Text == file.DirectoryName)
+                    {
+                        return; 
+                    }
+                }
 
-         
-            Icon icon = Icon.ExtractAssociatedIcon(file.FullName);
+                // Создадим элемент списка и три подэлемента 
+                ListViewItem item = new ListViewItem(file.Name);
+                item.SubItems.Add(file.DirectoryName);
+                item.SubItems.Add(file.Length.ToString() + " байт");
+                item.SubItems.Add(file.LastWriteTime.ToString());
 
-            // Инициализируем списки изображений картинками
-            imageListSmall.Images.Add(icon);  
-            imageListLarge.Images.Add(icon);
 
-            item.ImageIndex = imageListSmall.Images.Count-1;
+                Icon icon = Icon.ExtractAssociatedIcon(file.FullName);
 
-            listView1.Items.Add(item);
+                // Инициализируем списки изображений картинками
+                imageListSmall.Images.Add(icon);
+                imageListLarge.Images.Add(icon);
+
+                item.ImageIndex = imageListSmall.Images.Count - 1;
+
+                listView1.Items.Add(item);
+            }/* Вызываемый делегат SendOrPostCallback */,
+            null/* Объект, переданный делегату */);
         }
+
+       
 
 
         private void button3_Click(object sender, EventArgs e)// Малые значки
@@ -272,6 +339,15 @@ namespace FileSearcher
                 listView1.Columns.Add("Дата Модификации", 100);
             }
         }
+
+
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            event_for_stop1.Set();
+        }
+
+
     }
 
 

@@ -80,7 +80,6 @@
             listView1.Size = new Size(711, 317);
             listView1.TabIndex = 3;
             listView1.UseCompatibleStateImageBehavior = false;
-            listView1.View = View.Details;
             // 
             // textBoxMask
             // 
