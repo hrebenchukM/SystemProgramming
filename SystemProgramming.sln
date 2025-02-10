@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSearcher", "FileSearche
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TPL copy file", "TPL copy file\TPL copy file.csproj", "{52C83721-4960-4141-ADF4-E8F130BE4A6B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSearcherTPL", "FileSearcherTPL\FileSearcherTPL.csproj", "{513DCDA5-7C8D-4BAC-A8DB-249DE1564699}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{52C83721-4960-4141-ADF4-E8F130BE4A6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{52C83721-4960-4141-ADF4-E8F130BE4A6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{52C83721-4960-4141-ADF4-E8F130BE4A6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{513DCDA5-7C8D-4BAC-A8DB-249DE1564699}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{513DCDA5-7C8D-4BAC-A8DB-249DE1564699}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{513DCDA5-7C8D-4BAC-A8DB-249DE1564699}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{513DCDA5-7C8D-4BAC-A8DB-249DE1564699}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
