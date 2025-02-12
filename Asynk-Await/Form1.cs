@@ -94,10 +94,10 @@ namespace Asynk_Await
             FileStream receiver_file = null;
             BinaryReader reader = null;
             BinaryWriter writer = null;
-
-
+          
             try
             {
+
                 source_file = new FileStream(source, FileMode.Open, FileAccess.Read);
                 receiver_file = new FileStream(receiver, FileMode.Create, FileAccess.Write);
                 reader = new BinaryReader(source_file);
@@ -112,7 +112,7 @@ namespace Asynk_Await
                 uiContext.Send(d => progressBar1.Maximum = 100, null);
                 uiContext.Send(d => progressBar1.Value = 0, null);
 
-                await Task.Run( () =>
+                await Task.Run(async () =>
                 {
 
 
@@ -124,6 +124,7 @@ namespace Asynk_Await
                         token.ThrowIfCancellationRequested();
                        
                         int bytesRead = reader.Read(buff, 0, buff.Length);
+                        if (bytesRead == 0) break;
                         for (int i = 0; i < bytesRead; i++)
                         {
                             if (encdec)
@@ -143,7 +144,7 @@ namespace Asynk_Await
                         // uiContext.Send отправляет синхронное сообщение в контекст синхронизации
                         // SendOrPostCallback - делегат указывает метод, вызываемый при отправке сообщения в контекст синхронизации. 
                         uiContext.Send(d => progressBar1.Value = (int)((bytesProc * 100) / allBytes) /* Вызываемый делегат SendOrPostCallback */, null);
-                        Thread.Sleep(2000);
+                        await Task.Delay(2000, token);
                     }
 
                 }, token);
@@ -152,7 +153,17 @@ namespace Asynk_Await
             }
             catch (OperationCanceledException ex)
             {
-                File.Delete(receiver);
+                writer.Close();
+                reader.Close();
+                source_file.Close();
+                receiver_file.Close();
+
+                if (File.Exists(receiver))
+                {
+                    File.Delete(receiver);
+                }
+                MessageBox.Show("Задача отменена.", "Отмена", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
             }
             catch (Exception ex)
             {
