@@ -87,8 +87,8 @@ namespace Asynk_Await
 
          async Task EncryptDecrypt(string source,string key, CancellationToken token,bool encdec)
          {
-            string receiver = encdec ? source + ".xor" : source + ".dec";
             byte[] keyBytes = System.Text.Encoding.UTF8.GetBytes(key);
+            byte[] fileBytes;
 
             FileStream source_file = null;
             FileStream receiver_file = null;
@@ -99,69 +99,73 @@ namespace Asynk_Await
             {
 
                 source_file = new FileStream(source, FileMode.Open, FileAccess.Read);
-                receiver_file = new FileStream(receiver, FileMode.Create, FileAccess.Write);
                 reader = new BinaryReader(source_file);
-                writer = new BinaryWriter(receiver_file);
+                fileBytes = reader.ReadBytes((int)source_file.Length);
+
+                source_file.Close();
+                reader.Close();
 
 
-                byte[] buff = new byte[256];
-                long allBytes = new FileInfo(source).Length;  // общий размер файла
+
+              
+
+
+                long allBytes = fileBytes.Length;  // общий размер файла
                 long bytesProc = 0;  // Кол-во обработтанных байт
 
                 uiContext.Send(d => progressBar1.Minimum = 0, null);
                 uiContext.Send(d => progressBar1.Maximum = 100, null);
                 uiContext.Send(d => progressBar1.Value = 0, null);
 
-                await Task.Run(async () =>
+                await Task.Run( () =>
                 {
-
-
-
-                    while (bytesProc < allBytes)
-                    {
-
-
+                     for (int i = 0; i < fileBytes.Length; i++)
+                     {
                         token.ThrowIfCancellationRequested();
-                       
-                        int bytesRead = reader.Read(buff, 0, buff.Length);
-                        if (bytesRead == 0) break;
-                        for (int i = 0; i < bytesRead; i++)
+ 
+                        if (encdec)
                         {
-                            if (encdec)
-                            {
-                                // Зашифровка: XOR с ключом
-                                buff[i] ^= keyBytes[i % keyBytes.Length];
-                            }
-                            else
-                            {
-                                // Расшифровка: XOR с тем же ключом
-                                buff[i] ^= keyBytes[i % keyBytes.Length];
-                            }
+                          // Зашифровка: XOR с ключом
+                          fileBytes[i] ^= keyBytes[i % keyBytes.Length];
                         }
-                        writer.Write(buff, 0, bytesRead);
-                        bytesProc += bytesRead;
+                        else
+                        {
+                           // Расшифровка: XOR с тем же ключом
+                           fileBytes[i] ^= keyBytes[i % keyBytes.Length];
+                        }
+                            bytesProc++;
 
-                        // uiContext.Send отправляет синхронное сообщение в контекст синхронизации
-                        // SendOrPostCallback - делегат указывает метод, вызываемый при отправке сообщения в контекст синхронизации. 
-                        uiContext.Send(d => progressBar1.Value = (int)((bytesProc * 100) / allBytes) /* Вызываемый делегат SendOrPostCallback */, null);
-                        await Task.Delay(2000, token);
-                    }
-
+                            // uiContext.Send отправляет синхронное сообщение в контекст синхронизации
+                            // SendOrPostCallback - делегат указывает метод, вызываемый при отправке сообщения в контекст синхронизации. 
+                            uiContext.Send(d => progressBar1.Value = (int)((bytesProc * 100) / allBytes) /* Вызываемый делегат SendOrPostCallback */, null);
+                            Thread.Sleep(10);
+                     }
                 }, token);
+
+
+
+                receiver_file = new FileStream(source, FileMode.Open, FileAccess.Write);
+                writer = new BinaryWriter(receiver_file);
+
+
+                writer.Write(fileBytes);
+                receiver_file.Close();
+                writer.Close();
+
+
+
+
                 MessageBox.Show("Файл успешно обработан!", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             }
             catch (OperationCanceledException ex)
             {
-                writer.Close();
-                reader.Close();
-                source_file.Close();
-                receiver_file.Close();
+                writer?.Close();
+                reader?.Close();
+                source_file?.Close();
+                receiver_file?.Close();
 
-                if (File.Exists(receiver))
-                {
-                    File.Delete(receiver);
-                }
+               
                 MessageBox.Show("Задача отменена.", "Отмена", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             }
@@ -172,10 +176,10 @@ namespace Asynk_Await
             finally
             {
 
-                writer.Close();
-                reader.Close();
-                source_file.Close();
-                receiver_file.Close();
+                writer?.Close();
+                reader?.Close();
+                source_file?.Close();
+                receiver_file?.Close();
             }
 
 
