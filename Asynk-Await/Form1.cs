@@ -104,7 +104,7 @@ namespace Asynk_Await
                 writer = new BinaryWriter(receiver_file);
 
 
-                byte[] buff = new byte[512];
+                byte[] buff = new byte[256];
                 long allBytes = new FileInfo(source).Length;  // общий размер файла
                 long bytesProc = 0;  // Кол-во обработтанных байт
 
@@ -112,14 +112,15 @@ namespace Asynk_Await
                 uiContext.Send(d => progressBar1.Maximum = 100, null);
                 uiContext.Send(d => progressBar1.Value = 0, null);
 
-                await Task.Run(async () =>
+                await Task.Run( () =>
                 {
 
 
 
                     while (bytesProc < allBytes)
                     {
-                           
+
+
                         token.ThrowIfCancellationRequested();
                        
                         int bytesRead = reader.Read(buff, 0, buff.Length);
@@ -142,7 +143,7 @@ namespace Asynk_Await
                         // uiContext.Send отправляет синхронное сообщение в контекст синхронизации
                         // SendOrPostCallback - делегат указывает метод, вызываемый при отправке сообщения в контекст синхронизации. 
                         uiContext.Send(d => progressBar1.Value = (int)((bytesProc * 100) / allBytes) /* Вызываемый делегат SendOrPostCallback */, null);
-                        await Task.Delay(2000);
+                        Thread.Sleep(2000);
                     }
 
                 }, token);
@@ -151,10 +152,7 @@ namespace Asynk_Await
             }
             catch (OperationCanceledException ex)
             {
-                if (File.Exists(receiver))
-                {
-                    File.Delete(receiver);
-                }
+                File.Delete(receiver);
             }
             catch (Exception ex)
             {
