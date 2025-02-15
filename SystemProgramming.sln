@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSearcherTPL", "FileSear
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Asynk-Await", "Asynk-Await\Asynk-Await.csproj", "{91A4862F-0798-4B73-A74E-00750CBD3BE3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mutex", "Mutex\Mutex.csproj", "{B06365DB-E5DC-4AE4-AA6A-0F3A1DA4522F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{91A4862F-0798-4B73-A74E-00750CBD3BE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91A4862F-0798-4B73-A74E-00750CBD3BE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91A4862F-0798-4B73-A74E-00750CBD3BE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B06365DB-E5DC-4AE4-AA6A-0F3A1DA4522F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B06365DB-E5DC-4AE4-AA6A-0F3A1DA4522F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B06365DB-E5DC-4AE4-AA6A-0F3A1DA4522F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B06365DB-E5DC-4AE4-AA6A-0F3A1DA4522F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
