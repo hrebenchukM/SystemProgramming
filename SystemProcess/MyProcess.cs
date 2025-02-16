@@ -11,14 +11,13 @@ namespace SystemProcess
     {
         public Process ProcessRef { get; set; }
         public string ProcessName { get; set; }
-        public int ProcessId { get; set; }
-
+      
 
         public MyProcess(Process process)
         {
             ProcessRef = process;
             ProcessName = process.ProcessName;
-            ProcessId = process.Id;
+           
         }
 
         public override string ToString()
