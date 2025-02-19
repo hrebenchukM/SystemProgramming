@@ -75,6 +75,7 @@
             listBox1.Name = "listBox1";
             listBox1.Size = new Size(120, 334);
             listBox1.TabIndex = 3;
+            listBox1.MouseDoubleClick += listBox1_MouseDoubleClick;
             // 
             // listBox2
             // 
@@ -93,7 +94,7 @@
             listBox3.Name = "listBox3";
             listBox3.Size = new Size(120, 334);
             listBox3.TabIndex = 5;
-            listBox3.SelectedIndexChanged += listBox3_SelectedIndexChanged;
+            listBox3.MouseDoubleClick += listBox3_MouseDoubleClick;
             // 
             // label4
             // 

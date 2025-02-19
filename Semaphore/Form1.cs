@@ -1,90 +1,153 @@
 using System;
-using System.Windows.Forms;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Windows.Forms;
 
 namespace SemaphoreHW
 {
-
     /*
-   Семафор ограничивает число потоков, которые могут одновременно получать доступ к ресурсу или пулу ресурсов. 
-    public Semaphore(
-       int initialCount,  - Начальное количество запросов семафора, которое может быть удовлетворено одновременно.
-       int maximumCount,  - Максимальное количество запросов семафора, которое может быть удовлетворено одновременно.
-       string name – имя  - Имя объекта именованного системного семафора.
-   );
+     Семафор ограничивает число потоков, которые могут одновременно получать доступ к ресурсу или пулу ресурсов. 
+      public Semaphore(
+         int initialCount,  - Начальное количество запросов семафора, которое может быть удовлетворено одновременно.
+         int maximumCount,  - Максимальное количество запросов семафора, которое может быть удовлетворено одновременно.
+         string name – имя  - Имя объекта именованного системного семафора.
+     );
 
-   public int Release( - Выходит из семафора указанное число раз и возвращает последнее значение счетчика.
-       int releaseCount – Количество требуемых выходов из семафора.
-   );
+     public int Release( - Выходит из семафора указанное число раз и возвращает последнее значение счетчика.
+         int releaseCount – Количество требуемых выходов из семафора.
+     );
 
-   public virtual bool WaitOne();  ожидает переход семафора в сигнальное состояние
+     public virtual bool WaitOne();  ожидает переход семафора в сигнальное состояние
 
-   public static Semaphore OpenExisting( - Открытие существующего именованного семафора.
-       string name
-   );
-   */
+     public static Semaphore OpenExisting( - Открытие существующего именованного семафора.
+         string name
+     );
+     */
     public partial class Form1 : Form
     {
-        public SynchronizationContext uiContext;
-        Task[] arraytasks = new Task[15];
+        private SynchronizationContext uiContext;
+        private Semaphore semaphore;
+        private int threadCount = 0;
+        private int maxSlots = 0;
+
+        private CancellationTokenSource[] ctsArr = new CancellationTokenSource[50];
+        private Task[] tasksArr = new Task[50];
+
         public Form1()
         {
             InitializeComponent();
             uiContext = SynchronizationContext.Current;
-
+            semaphore = new Semaphore(maxSlots, 50, "1A9191BF-AA26-46E1-BB85-BDA396BC6469");
         }
 
-
-
-
-        void ThreadAct(Object obj)
+        private void ThreadAct(int tN, CancellationToken token)
         {
+            string tName = "Поток " + tN;
+            int sec = 0;
             try
             {
-                ListBox txt = (ListBox)obj;
-                Semaphore sem = Semaphore.OpenExisting("1A9191BF-AA26-46E1-BB85-BDA396BC6469");
-                sem.WaitOne();
-                int i = 0;
-                while (i++ < 500)
+                semaphore.WaitOne();
+                uiContext.Send(d =>
                 {
-                    uiContext.Send(d => txt.Text = i.ToString(), null);
-                    System.Threading.Thread.Sleep(10);
+                    listBox2.Items.Remove(tName);
+                    listBox1.Items.Add(tName + " -> 0");
+                }, null);
+
+
+                while (!token.IsCancellationRequested)
+                {
+                    sec++;
+                    uiContext.Send(d =>
+                    {
+                        for (int i = 0; i < listBox1.Items.Count; i++)
+                        {
+                            if (listBox1.Items[i].ToString().StartsWith(tName + " ->"))
+                            {
+                                listBox1.Items[i] = tName + " -> " + sec;
+                                break;
+                            }
+                        }
+                    }, null);
+                    Thread.Sleep(1000);
                 }
-                sem.Release();
             }
-            catch (Exception ex)
+            catch (OperationCanceledException)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show("Поток отменён.");
             }
+          
+       
         }
 
-        // пример на семафор
+       
         private void button1_Click(object sender, EventArgs e)
         {
-            try
+            threadCount++;
+            string tName = "Поток " + threadCount;
+            ctsArr[threadCount - 1] = new CancellationTokenSource();
+            listBox3.Items.Add(tName);
+        }
+
+   
+        private void listBox3_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (listBox3.SelectedItem == null)
+                return;
+            string tName = listBox3.SelectedItem.ToString();
+            listBox3.Items.Remove(tName);
+            listBox2.Items.Add(tName);
+
+            string[] parts = tName.Split(' ');
+            if (int.TryParse(parts[1], out int tNum))
             {
-                arraytasks[1] = Task.Factory.StartNew(ThreadAct, listBox1);
-                arraytasks[2] = Task.Factory.StartNew(ThreadAct, listBox2);
-                arraytasks[3] = Task.Factory.StartNew(ThreadAct, listBox3);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
+               
+                Task tsk = Task.Run(() => ThreadAct(tNum, ctsArr[tNum - 1].Token), ctsArr[tNum - 1].Token);
+                tasksArr[tNum - 1] = tsk;
             }
         }
 
+      
+        private void listBox1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (listBox1.SelectedItem == null)
+                return;
+            string tName = listBox1.SelectedItem.ToString();
+            string[] parts = listBox1.SelectedItem.ToString().Split(' ');
+            if (int.TryParse(parts[1], out int tNum))
+            {
+               
+                ctsArr[tNum - 1].Cancel();
+                semaphore.Release();
+            }
+            listBox1.Items.Remove(tName);
+        }
+
+        
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
+            int newMaxSlots = (int)numericUpDown1.Value;
 
-        }
-
-        private void listBox3_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
+            if (newMaxSlots > maxSlots)
+            {
+                semaphore.Release(newMaxSlots - maxSlots);
+            }
+            else if (newMaxSlots < maxSlots)
+            {
+                for (int i = 0; i < maxSlots - newMaxSlots; i++)
+                {
+                    if (listBox1.Items.Count > 0)
+                    {
+                        string[] parts = listBox1.Items[0].ToString().Split(' ');
+                        if (int.TryParse(parts[1], out int tNum))
+                        {
+                            ctsArr[tNum - 1].Cancel();
+                        }
+                        listBox1.Items.RemoveAt(0);
+                    }
+                }
+            }
+            maxSlots = newMaxSlots;
         }
     }
 }
-
